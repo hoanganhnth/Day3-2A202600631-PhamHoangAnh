@@ -10,7 +10,7 @@ class GeminiProvider(LLMProvider):
         genai.configure(api_key=self.api_key)
         self.model = genai.GenerativeModel(model_name)
 
-    def generate(self, prompt: str, system_prompt: Optional[str] = None) -> Dict[str, Any]:
+    def generate(self, prompt: str, system_prompt: Optional[str] = None, stop: Optional[List[str]] = None) -> Dict[str, Any]:
         start_time = time.time()
         
         # In Gemini, system instruction is passed during model initialization or as a prefix
@@ -19,7 +19,12 @@ class GeminiProvider(LLMProvider):
         if system_prompt:
             full_prompt = f"System: {system_prompt}\n\nUser: {prompt}"
 
-        response = self.model.generate_content(full_prompt)
+        # Gemini supports stop sequences through GenerationConfig
+        config = None
+        if stop:
+            config = genai.types.GenerationConfig(stop_sequences=stop)
+
+        response = self.model.generate_content(full_prompt, generation_config=config)
 
         end_time = time.time()
         latency_ms = int((end_time - start_time) * 1000)
@@ -39,11 +44,15 @@ class GeminiProvider(LLMProvider):
             "provider": "google"
         }
 
-    def stream(self, prompt: str, system_prompt: Optional[str] = None) -> Generator[str, None, None]:
+    def stream(self, prompt: str, system_prompt: Optional[str] = None, stop: Optional[List[str]] = None) -> Generator[str, None, None]:
         full_prompt = prompt
         if system_prompt:
             full_prompt = f"System: {system_prompt}\n\nUser: {prompt}"
 
-        response = self.model.generate_content(full_prompt, stream=True)
+        config = None
+        if stop:
+            config = genai.types.GenerationConfig(stop_sequences=stop)
+
+        response = self.model.generate_content(full_prompt, stream=True, generation_config=config)
         for chunk in response:
             yield chunk.text

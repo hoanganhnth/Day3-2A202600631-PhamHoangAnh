@@ -8,7 +8,7 @@ class OpenAIProvider(LLMProvider):
         super().__init__(model_name, api_key)
         self.client = OpenAI(api_key=self.api_key)
 
-    def generate(self, prompt: str, system_prompt: Optional[str] = None) -> Dict[str, Any]:
+    def generate(self, prompt: str, system_prompt: Optional[str] = None, stop: Optional[List[str]] = None) -> Dict[str, Any]:
         start_time = time.time()
         
         messages = []
@@ -19,6 +19,7 @@ class OpenAIProvider(LLMProvider):
         response = self.client.chat.completions.create(
             model=self.model_name,
             messages=messages,
+            stop=stop
         )
 
         end_time = time.time()
@@ -39,7 +40,7 @@ class OpenAIProvider(LLMProvider):
             "provider": "openai"
         }
 
-    def stream(self, prompt: str, system_prompt: Optional[str] = None) -> Generator[str, None, None]:
+    def stream(self, prompt: str, system_prompt: Optional[str] = None, stop: Optional[List[str]] = None) -> Generator[str, None, None]:
         messages = []
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
@@ -48,7 +49,8 @@ class OpenAIProvider(LLMProvider):
         stream = self.client.chat.completions.create(
             model=self.model_name,
             messages=messages,
-            stream=True
+            stream=True,
+            stop=stop
         )
 
         for chunk in stream:

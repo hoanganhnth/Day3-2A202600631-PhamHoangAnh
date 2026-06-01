@@ -79,8 +79,8 @@ Final Answer: <nội dung phản hồi hoàn chỉnh cho người dùng dựa tr
             
             logger.log_event("LLM_CALL_START", {"step": steps})
             
-            # Generate LLM response
-            result = self.llm.generate(prompt, system_prompt=self.get_system_prompt())
+            # Generate LLM response with stop sequences to force LLM to yield control after writing Action!
+            result = self.llm.generate(prompt, system_prompt=self.get_system_prompt(), stop=["Observation:", "observation:", "Observation", "observation"])
             content = result["content"]
             
             logger.log_event("LLM_CALL_END", {

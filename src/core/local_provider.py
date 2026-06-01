@@ -30,7 +30,7 @@ class LocalProvider(LLMProvider):
             verbose=False
         )
 
-    def generate(self, prompt: str, system_prompt: Optional[str] = None) -> Dict[str, Any]:
+    def generate(self, prompt: str, system_prompt: Optional[str] = None, stop: Optional[List[str]] = None) -> Dict[str, Any]:
         start_time = time.time()
         
         # Phi-3 / Llama-3 style formatting if not handled by a template
@@ -40,10 +40,15 @@ class LocalProvider(LLMProvider):
         else:
             full_prompt = f"<|user|>\n{prompt}<|end|>\n<|assistant|>"
 
+        # Combine default stop sequences with passed stop sequences
+        local_stop = ["<|end|>", "Observation:"]
+        if stop:
+            local_stop.extend(stop)
+
         response = self.llm(
             full_prompt,
             max_tokens=1024,
-            stop=["<|end|>", "Observation:"],
+            stop=local_stop,
             echo=False
         )
 
@@ -64,17 +69,21 @@ class LocalProvider(LLMProvider):
             "provider": "local"
         }
 
-    def stream(self, prompt: str, system_prompt: Optional[str] = None) -> Generator[str, None, None]:
+    def stream(self, prompt: str, system_prompt: Optional[str] = None, stop: Optional[List[str]] = None) -> Generator[str, None, None]:
         full_prompt = prompt
         if system_prompt:
             full_prompt = f"<|system|>\n{system_prompt}<|end|>\n<|user|>\n{prompt}<|end|>\n<|assistant|>"
         else:
             full_prompt = f"<|user|>\n{prompt}<|end|>\n<|assistant|>"
 
+        local_stop = ["<|end|>", "Observation:"]
+        if stop:
+            local_stop.extend(stop)
+
         stream = self.llm(
             full_prompt,
             max_tokens=1024,
-            stop=["<|end|>", "Observation:"],
+            stop=local_stop,
             stream=True
         )
 
