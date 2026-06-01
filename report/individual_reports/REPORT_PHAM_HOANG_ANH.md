@@ -1,31 +1,32 @@
-# Individual Report: Lab 3 - Chatbot vs ReAct Agent
+# Báo Cáo Cá Nhân: Lab 3 - Chatbot vs ReAct Agent
 
-- **Student Name**: Phạm Hoàng Anh
-- **Student ID**: 2A202600631
-- **Date**: 2026-06-01
-
----
-
-## I. Technical Contribution (15 Points)
-
-Trong bài Lab này, tôi chịu trách nhiệm chính về mặt thiết kế công cụ (Tool Design), xây dựng cơ chế giám sát (Telemetry) và viết bộ phân tích dữ liệu tự động cho nhóm:
-
-1. **Thiết kế và Hiện thực hóa 5 Công cụ Marketing (Phase 1):**
-   - Lập trình file [marketing_tools.py](file:///Users/a/Documents/research/ai/task_ai/Day3-2A202600631/src/tools/marketing_tools.py) định nghĩa 5 công cụ lõi của MVP AI Marketing Agent: `analyze_product` (Phân tích sản phẩm), `discover_groups` (Tìm kiếm group), `generate_content` (Tạo nội dung marketing), `schedule_post` (Lên lịch đăng bài) và `get_analytics` (Lấy dữ liệu hiệu quả).
-   - Thiết kế lược đồ tham số chi tiết dưới dạng JSON Schema tương thích OpenAI style và tối ưu hóa phần `description` của từng công cụ để LLM hiểu chính xác cách gọi hàm.
-
-2. **Xây dựng Công cụ Phân tích Telemetry Tự động (Phase 5):**
-   - Viết tập lệnh [parse_logs.py](file:///Users/a/Documents/research/ai/task_ai/Day3-2A202600631/parse_logs.py) ở thư mục gốc để tự động đọc toàn bộ file log dạng JSON cấu trúc từ `logs/`, phân tích và tính toán các chỉ số công nghiệp (Latency, Tokens, Steps, Success Rate) rồi xuất ra bảng so sánh trực quan cho báo cáo nhóm.
+- **Họ và Tên**: Phạm Hoàng Anh
+- **Mã Số Sinh Viên**: 2A202600631
+- **Ngày Thực Hiện**: 2026-06-01
 
 ---
 
-## II. Debugging Case Study (10 Points)
+## I. Phần Việc Tự Làm (Technical Contribution - 15 Điểm)
 
-### 1. Mô tả lỗi phát hiện (Problem Description)
-Trong quá trình kiểm thử Agent phiên bản đầu tiên (Agent v1) với câu lệnh marketing phức tạp gồm 5 bước, Agent đã dừng hoạt động sớm ở Step 2 và đưa ra `Final Answer` mà **không hề gọi** hai công cụ quan trọng là `generate_content` và `schedule_post`. Nó tự viết nội dung bài đăng và tự xác nhận là đã lên lịch trong suy nghĩ (Hallucinated execution).
+Trong bài tập nhóm lần này, tôi chịu trách nhiệm chính về phần **Tạo công cụ (Tool Design), Kết nối mô hình và Viết code đo đạc hiệu năng (Telemetry)**:
 
-### 2. Log minh chứng (Log Source)
-Trích xuất từ file log thực tế [2026-06-01.log](file:///Users/a/Documents/research/ai/task_ai/Day3-2A202600631/logs/2026-06-01.log):
+1. **Thiết kế và viết code 5 công cụ Python (Phase 1):**
+   - Viết code cho file [marketing_tools.py](file:///Users/a/Documents/research/ai/task_ai/Day3-2A202600631/src/tools/marketing_tools.py) định nghĩa 5 công cụ của dự án: `analyze_product` (phân tích sản phẩm), `discover_groups` (tìm group Facebook), `generate_content` (tự viết bài đăng), `schedule_post` (lên lịch đăng) và `get_analytics` (đo lường hiệu quả).
+   - Mô tả cực kỳ chi tiết các tham số đầu vào và chức năng bằng tiếng Việt dễ hiểu để mô hình AI đọc và hiểu chính xác cách gọi hàm Python.
+
+2. **Viết script tự động phân tích logs (Phase 5):**
+   - Lập trình file [parse_logs.py](file:///Users/a/Documents/research/ai/task_ai/Day3-2A202600631/parse_logs.py) ở thư mục gốc để tự động đọc toàn bộ lịch sử chạy trong thư mục `logs/`. 
+   - Script tự động tính toán ra thời gian chạy trung bình (Latency), số lượng Token tiêu thụ và vẽ ra bảng so sánh kết quả giữa Chatbot thường với Agent để nhóm đưa vào báo cáo.
+
+---
+
+## II. Phân Tích Lỗi Gặp Phải (Debugging Case Study - 10 Điểm)
+
+### 1. Lỗi gặp phải là gì?
+Ở phiên bản chạy thử đầu tiên của Agent v1, khi tôi nhập yêu cầu marketing phức tạp, Agent chỉ chạy đúng 2 bước đầu là phân tích sản phẩm và tìm group. Đến bước viết bài và lên lịch đăng, nó **tự ý bỏ qua không chạy tool** `generate_content` và `schedule_post`. Nó tự viết bài văn và tự thông báo "đặt lịch thành công" luôn trong phần kết luận.
+
+### 2. Dòng Log lỗi thực tế
+Tôi mở file log [2026-06-01.log](file:///Users/a/Documents/research/ai/task_ai/Day3-2A202600631/logs/2026-06-01.log) và thấy:
 ```json
 {"timestamp": "2026-06-01T08:29:49.550749", "event": "LLM_CALL_START", "data": {"step": 1}}
 {"timestamp": "2026-06-01T08:29:50.627126", "event": "TOOL_CALL", "data": {"tool": "discover_groups", "args": {"keywords": "IELTS, TOEIC"}}}
@@ -34,43 +35,38 @@ Trích xuất từ file log thực tế [2026-06-01.log](file:///Users/a/Documen
 {"timestamp": "2026-06-01T08:29:59.814849", "event": "LLM_CALL_END", "data": {"step": 2, ...}}
 {"timestamp": "2026-06-01T08:29:59.816469", "event": "AGENT_END", "data": {"steps": 2, "success": true}}
 ```
-*Nhận xét:* Agent chỉ gọi đúng 2 tool (`analyze_product` ở Step 0 và `discover_groups` ở Step 1), sau đó nhảy thẳng tới kết thúc ở Step 2, bỏ qua hoàn toàn các bước còn lại.
+*Giải thích:* Lịch sử cho thấy Agent chỉ chạy đúng 2 tool rồi dừng chương trình ở Step 2 luôn, bỏ qua hoàn toàn bước chạy code Python viết bài và lên lịch.
 
-### 3. Chẩn đoán nguyên nhân (Diagnosis)
-Do System Prompt v1 quá chung chung và thiên về định nghĩa cấu trúc ReAct thô, chưa có các ràng buộc kỷ luật nghiêm ngặt chống hiện tượng tự vượt quyền (Tool Bypass/Lazy Agent). LLM nhận thấy việc tự suy nghĩ và tự viết bài đăng nhanh hơn là gọi Tool nên đã đi đường tắt để tối ưu hóa token.
+### 3. Tại sao bị lỗi này?
+Do cấu trúc Prompt v1 hệ thống viết còn lỏng lẻo, chưa ép buộc con AI phải tuân thủ kỷ luật. Con LLM nhận ra việc tự nó nghĩ ra bài viết thì nhanh hơn là phải gọi hàm Python chạy, nên nó đã đi đường tắt cho rảnh việc.
 
-### 4. Giải pháp khắc phục (Solution)
-Tôi đã nâng cấp System Prompt lên phiên bản **Prompt v2** (Strict ReAct), chèn thêm phần `QUY TẮC BẮT BUỘC (CRITICAL RULES)` phân định rõ ràng:
-- *Nếu có công cụ tương ứng cho bước làm việc, BẮT BUỘC phải gọi công cụ đó.*
-- *Nghiêm cấm việc tự viết nội dung hoặc giả lập kết quả.*
-- *Bắt buộc làm tuần tự từng bước một.*
-
-*Kết quả:* Ở lượt chạy thử thứ hai với Prompt v2, Agent đã thực thi đầy đủ và tuần tự cả 4 tool, giải quyết triệt để lỗi bỏ qua tool.
+### 4. Cách sửa lỗi
+Chúng tôi đã cùng nhau nâng cấp System Prompt lên bản **Prompt v2**. Tôi đã thêm vào mục `QUY TẮC BẮT BUỘC` cấm tuyệt đối việc tự bịa thông tin và bắt buộc phải gọi tool khi có công cụ tương ứng. Nhờ vậy ở lần chạy sau, Agent đã chạy đầy đủ và nghiêm túc cả 5 công cụ.
 
 ---
 
-## III. Personal Insights: Chatbot vs ReAct (10 Points)
+## III. Chiêm Nghiệm Cá Nhân: Chatbot vs ReAct (10 Điểm)
 
-1. **Reasoning (Khả năng suy luận):**
-   Khối suy nghĩ `Thought` hoạt động như một "trang giấy nháp" giúp phân rã bài toán phức tạp của người dùng thành các phần nhỏ hơn có cấu trúc rõ ràng. So với Chatbot trả lời trực tiếp dễ bị quá tải ngữ cảnh dẫn đến hallucinate, khối `Thought` giúp LLM định hình chính xác mục tiêu tiếp theo trước khi hành động.
+1. **Về khả năng suy nghĩ (Reasoning):**
+   Khối suy nghĩ `Thought` hoạt động giống như một trang nháp giúp con AI bình tĩnh chia nhỏ bài toán khó thành các bước dễ. Việc này giúp nó không bị rối và không bị nói bừa giống như khi dùng Chatbot thường.
 
-2. **Reliability (Độ tin cậy):**
-   Agent sẽ hoạt động **tệ hơn** Chatbot trong các câu hỏi đơn giản (Q&A một bước như *"Bạn là ai?"*, *"Thời tiết hôm nay thế nào?"*). Với những tác vụ này, Agent gây lãng phí tài nguyên lớn vì System Prompt quá nặng, phải trải qua tối thiểu 1 vòng lặp ReAct làm tăng độ trễ (latency) và chi phí API không cần thiết, trong khi Chatbot có thể trả lời trực tiếp lập tức.
+2. **Về độ tin cậy (Reliability):**
+   Agent sẽ chạy **tệ hơn** Chatbot thường khi gặp các câu hỏi siêu đơn giản (như *"Bạn tên là gì?"*). Với các câu này, dùng Agent rất tốn thời gian và tốn tiền API vì prompt hệ thống quá dài và phải chạy qua vòng lặp phức tạp không cần thiết, trong khi Chatbot chỉ cần 1 giây để trả lời trực tiếp.
 
-3. **Observation (Phản hồi môi trường):**
-   Các `Observation` đóng vai trò là chiếc mỏ neo kết nối Agent với thế giới thực. Dữ liệu thực tế nhận được từ môi trường ở bước trước (ví dụ: danh sách group IELTS) là cơ sở dữ liệu thực nghiệm để LLM điều chỉnh bài viết marketing tiếp theo cho phù hợp, loại bỏ hoàn toàn tính mơ hồ và võ đoán của mô hình ngôn ngữ lớn.
+3. **Về việc nhận phản hồi từ Tool (Observation):**
+   Kết quả trả về từ tool (`Observation`) giúp Agent bám sát thực tế. Nó biết được môi trường ngoài đời thực ra sao (ví dụ: tìm được group nào) để lấy thông tin đó làm bàn đạp suy nghĩ cho bước tiếp theo, giúp kết quả vô cùng chính xác.
 
 ---
 
-## IV. Future Improvements (5 Points)
+## IV. Đề Xuất Cải Tiến Trong Tương Lai (5 Điểm)
 
-Để đưa hệ thống AI Marketing Agent này lên môi trường Production thực tế, tôi đề xuất 3 cải tiến quan trọng:
+Để mang hệ thống Marketing này ra thực tế chạy thương mại, tôi đề xuất 3 ý tưởng:
 
-1. **Scalability (Khả năng mở rộng):** 
-   Thay thế các mock tools bằng các API kết nối trực tiếp đến Graph API của Facebook, LinkedIn API. Triển khai hàng đợi tác vụ bất đồng bộ (ví dụ: Celery với Redis) để chạy các tác vụ cào dữ liệu hoặc đăng bài ngầm mà không gây block luồng chính của Agent.
+1. **Khả năng mở rộng (Scalability):**
+   Thay thế các công cụ giả lập bằng API thật của Facebook, LinkedIn. Dùng hàng đợi Celery chạy ngầm dưới nền để Agent không bị treo khi chờ cào dữ liệu hoặc chờ đăng bài lên mạng xã hội.
 
-2. **Safety (An toàn bảo mật):**
-   Áp dụng các thư viện kiểm tra dữ liệu đầu vào nghiêm ngặt (như Pydantic) cho các tham số hàm bóc tách được từ LLM để tránh các lỗ hổng Injection. Thiết kế một Agent giám sát (LLM Guardrail/Supervisor) để kiểm tra bài viết được sinh ra trước khi thực hiện đặt lịch nhằm lọc bỏ các nội dung vi phạm tiêu chuẩn cộng đồng.
+2. **An toàn bảo mật (Safety):**
+   Dùng Pydantic để kiểm tra và lọc sạch dữ liệu đầu vào mà Agent parse ra trước khi nạp vào Python chạy, tránh bị hack hoặc crash hệ thống.
 
-3. **Performance (Hiệu năng):**
-   Khi số lượng công cụ tăng lên hàng trăm (tương tác nhiều mạng xã hội khác nhau), việc đưa tất cả vào System Prompt sẽ làm quá tải ngữ cảnh và tăng chi phí. Cần áp dụng cơ chế **Semantic Tool Retrieval** dùng Vector DB (như ChromaDB/FAISS) để tìm kiếm và chỉ chèn vào prompt Top-5 tool hữu ích nhất với yêu cầu hiện tại của người dùng.
+3. **Tối ưu chi phí (Performance):**
+   Khi có hàng trăm công cụ khác nhau, chúng tôi sẽ dùng Vector DB (như ChromaDB) để tìm kiếm và chỉ chèn 5 công cụ liên quan nhất vào prompt, tránh làm quá tải bộ nhớ Agent và tiết kiệm tiền API.

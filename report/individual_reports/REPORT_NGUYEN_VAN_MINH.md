@@ -1,73 +1,68 @@
-# Individual Report: Lab 3 - Chatbot vs ReAct Agent
+# Báo Cáo Cá Nhân: Lab 3 - Chatbot vs ReAct Agent
 
-- **Student Name**: Nguyễn Văn Minh
-- **Student ID**: 2A202600556
-- **Date**: 2026-06-01
-
----
-
-## I. Technical Contribution (15 Points)
-
-Trong bài Lab này, tôi chịu trách nhiệm chính về mặt **Hiện thực hóa bộ não Agent (Core Agent Logic & Prompt Engineering)**:
-
-1. **Hiện thực hóa Vòng lặp ReAct (`run` method):**
-   - Lập trình vòng lặp chính của ReAct trong file [agent.py](file:///Users/a/Documents/research/ai/task_ai/Day3-2A202600631/src/agent/agent.py) để lặp đi lặp lại chu trình sinh suy nghĩ (Thought) -> Thực thi hành động (Action) -> Nhận phản hồi thực tế (Observation).
-   - Thiết lập cơ chế ghi nháp liên tục (`scratchpad`) để tích lũy ngữ cảnh suy luận qua từng bước lặp, giúp LLM kiểm soát tốt tiến trình chạy.
-   - Viết các biểu thức chính quy (Regex) và logic bóc tách động để lấy ra tên công cụ nghiệp vụ và các tham số truyền vào từ kết quả dạng text của LLM, hỗ trợ phân tích cả định dạng JSON và Keyword Arguments.
-
-2. **Kỹ nghệ Gợi ý & Tối ưu hóa System Prompt (Prompt Engineering):**
-   - Xây dựng hàm tạo prompt động `get_system_prompt` nhằm định hình vai trò của Agent là một chuyên gia marketing thông minh.
-   - Trực tiếp nâng cấp prompt từ phiên bản v1 lên phiên bản **Prompt v2 (Strict ReAct Prompt)**, bổ sung điều khoản `QUY TẮC BẮT BUỘC (CRITICAL RULES)` cưỡng chế gọi tool cho từng bước nghiệp vụ, loại bỏ lỗi bỏ qua tool (Tool Bypass) khi phát hiện qua logs.
+- **Họ và Tên**: Nguyễn Văn Minh
+- **Mã Số Sinh Viên**: 2A202600556
+- **Ngày Thực Hiện**: 2026-06-01
 
 ---
 
-## II. Debugging Case Study (10 Points)
+## I. Phần Việc Tự Làm (Technical Contribution - 15 Điểm)
 
-### 1. Mô tả lỗi phát hiện (Problem Description)
-Trong lượt chạy đầu tiên của Agent v1, khi LLM sinh ra bài viết marketing và lên lịch đăng bài, nó đã tự ý bỏ qua tool `generate_content` và tool `schedule_post`. Nó tự viết bài đăng và tự gõ dòng thông báo xác nhận lịch đăng trong câu trả lời cuối cùng (`Final Answer`) mà không hề thực hiện bất kỳ lệnh gọi Tool vật lý nào (Tool Bypass / Lazy Agent).
+Trong bài tập nhóm lần này, tôi chịu trách nhiệm chính về phần **Lập trình lõi Agent và kỹ nghệ gợi ý (Prompt Engineering)**:
 
-### 2. Log minh chứng (Log Source)
-Trích xuất từ file log thực tế [2026-06-01.log](file:///Users/a/Documents/research/ai/task_ai/Day3-2A202600631/logs/2026-06-01.log):
+1. **Viết vòng lặp ReAct (`run` method):**
+   - Viết code chính cho vòng lặp ReAct trong file [agent.py](file:///Users/a/Documents/research/ai/task_ai/Day3-2A202600631/src/agent/agent.py) để Agent lặp đi lặp lại các bước: tự suy nghĩ (Thought) -> tự gọi Action -> nhận Observation từ Python.
+   - Thiết lập trang nháp (`scratchpad`) ghi nhớ lịch sử chạy để Agent không bị lặp vô hạn và biết mình đang làm đến đâu.
+   - Viết các biểu thức Regex thông minh để bóc tách hành động và tham số của Agent, xử lý tốt cả định dạng tham số kiểu JSON và kiểu gán biến thông thường.
+
+2. **Kỹ nghệ gợi ý & Tối ưu hóa System Prompt:**
+   - Xây dựng hàm prompt hệ thống `get_system_prompt` định hình vai trò của Marketing Agent.
+   - Nâng cấp prompt từ phiên bản v1 lỏng lẻo lên phiên bản **Prompt v2 (Strict ReAct)** thêm bộ luật cưỡng chế bắt buộc Agent phải gọi tool thật và cấm tự bịa kết quả.
+
+---
+
+## II. Phân Tích Lỗi Gặp Phải (Debugging Case Study - 10 Điểm)
+
+### 1. Lỗi gặp phải là gì?
+Khi chạy Agent phiên bản v1 với yêu cầu marketing đầy đủ, con AI sau khi tìm kiếm group đã tự ý bỏ qua tool viết bài đăng (`generate_content`) và tool lên lịch (`schedule_post`). Nó tự viết bài quảng cáo và tự thông báo "đã lên lịch đăng lúc 8h tối thành công" trong câu trả lời cuối cùng (`Final Answer`) mà không chạy code Python nghiệp vụ thật.
+
+### 2. Dòng Log lỗi thực tế
+Trích từ file log hệ thống [2026-06-01.log](file:///Users/a/Documents/research/ai/task_ai/Day3-2A202600631/logs/2026-06-01.log):
 ```json
 {"timestamp": "2026-06-01T08:29:50.627537", "event": "LLM_CALL_START", "data": {"step": 2}}
 {"timestamp": "2026-06-01T08:29:59.814849", "event": "LLM_CALL_END", "data": {"step": 2, ...}}
 {"timestamp": "2026-06-01T08:29:59.816469", "event": "AGENT_END", "data": {"steps": 2, "success": true}}
 ```
-*Nhận xét:* Agent kết thúc sớm ở Step 2 chỉ với 2 tool được gọi (`analyze_product` và `discover_groups`), bỏ qua hoàn toàn các bước sinh nội dung và lên lịch vật lý.
+*Nhận xét:* Agent kết thúc chương trình sớm ở Step 2, chỉ gọi đúng 2 tool đầu và bỏ qua hoàn toàn bước chạy code viết bài và lên lịch đăng bài.
 
-### 3. Chẩn đoán nguyên nhân (Diagnosis)
-Do prompt v1 chỉ hướng dẫn định dạng ReAct chung chung, chưa nhấn mạnh việc **BẮT BUỘC** gọi tool nếu tool đó có tồn tại cho tác vụ. LLM vốn là mô hình sinh ngôn ngữ xuất sắc nên nó ưu tiên việc tự viết văn bản bài đăng hơn là gửi yêu cầu qua một Tool Python trung gian.
+### 3. Tại sao bị lỗi này?
+Do Prompt v1 viết chưa đủ chặt chẽ và nghiêm khắc. Con LLM nhận thấy việc tự nó nghĩ ra bài viết thì nhanh hơn là phải gọi hàm Python chạy tiếp, nên nó đã đi đường tắt (Shortcut) để tối ưu hóa năng lượng.
 
-### 4. Giải pháp khắc phục (Solution)
-Tôi đã viết lại phần System Prompt nâng lên bản **Prompt v2**. Tôi bổ sung phần cưỡng chế gọi Tool cực kỳ nghiêm ngặt:
-- *"BẮT BUỘC SỬ DỤNG TOOL: Nếu có công cụ hỗ trợ cho một bước công việc nào đó, bạn BẮT BUỘC phải gọi công cụ đó thông qua Action. Tuyệt đối KHÔNG tự nghĩ ra, KHÔNG tự giả lập..."*
-- *"Để tạo nội dung bài viết marketing -> Bắt buộc gọi tool generate_content."*
-- *"Để lên lịch đăng bài -> Bắt buộc gọi tool schedule_post."*
-
-Sau khi nâng cấp prompt lên v2, Agent đã thực thi kỷ luật tuyệt đối, gọi đầy đủ cả 4 tool một cách tuần tự.
+### 4. Cách sửa lỗi
+Tôi đã nâng cấp System Prompt lên bản **Prompt v2**, thêm phần `QUY TẮC BẮT BUỘC` cấm tuyệt đối tự bịa thông tin và bắt buộc phải gọi tool khi có công cụ hỗ trợ. Kết quả là ở lần chạy sau, Agent đã chạy rất kỷ luật và gọi đầy đủ cả 5 công cụ Python một cách tuần tự.
 
 ---
 
-## III. Personal Insights: Chatbot vs ReAct (10 Points)
+## III. Chiêm Nghiệm Cá Nhân: Chatbot vs ReAct (10 Điểm)
 
-1. **Reasoning (Khả năng suy luận):**
-   Vòng lặp ReAct tạo ra cơ hội để LLM tự sửa sai. Nhờ có bước `Thought` xen kẽ trước mỗi hành động, LLM có thể lập luận một cách tĩnh lặng về kết quả của bước trước rồi mới quyết định bước tiếp theo, thay vì vội vã đưa ra câu trả lời toàn cục thiếu chính xác.
+1. **Về khả năng suy nghĩ (Reasoning):**
+   Vòng lặp ReAct giúp con LLM có cơ hội tự suy nghĩ và tự sửa lỗi. Bước nháp `Thought` giúp nó chia nhỏ công việc phức tạp thành các bước nhỏ dễ làm, giúp kết quả đầu ra vô cùng chính xác thay vì hứa hẹn suông giống như Chatbot thường.
 
-2. **Reliability (Độ tin cậy):**
-   Mặc dù ReAct Agent rất mạnh mẽ trong việc giải quyết vấn đề đa bước, nó phụ thuộc cực lớn vào độ chuẩn xác của bộ Parser và tính chặt chẽ của Prompt. Nếu Prompt viết lỏng lẻo, Agent sẽ tự động tìm đường tắt đi qua tool (bypass). Do đó, prompt kỹ thuật của Agent phải mang tính chất như một bản hợp đồng pháp lý chặt chẽ hơn là một đoạn hội thoại gợi ý thông thường.
+2. **Về độ tin cậy (Reliability):**
+   Mặc dù ReAct Agent rất mạnh mẽ nhưng nó phụ thuộc hoàn toàn vào bộ Parser (Regex bóc tách lệnh) và sự chặt chẽ của Prompt. Nếu prompt viết lỏng lẻo, Agent sẽ tự động lách luật để đi đường tắt. Do đó, viết prompt cho Agent cần cực kỳ cẩn thận giống như viết một bản hợp đồng pháp lý vậy.
 
-3. **Observation (Phản hồi môi trường):**
-   Dữ liệu Observation phản hồi về trang nháp giúp LLM nhận thức được kết quả khách quan của hành động trước đó, từ đó điều hướng suy nghĩ tiếp theo một cách thực tế và không bị lạc lối trong không gian suy luận.
+3. **Về việc nhận phản hồi từ Tool (Observation):**
+   Kết quả trả về từ tool (`Observation`) giúp Agent bám sát thực tế. Nó biết được kết quả khách quan ngoài đời thực ra sao để tiếp tục suy luận cho bước sau, không bị lạc lối trong không gian suy nghĩ mơ hồ.
 
 ---
 
-## IV. Future Improvements (5 Points)
+## IV. Đề Xuất Cải Tiến Trong Tương Lai (5 Điểm)
 
-1. **Scalability (Khả năng mở rộng):**
-   Áp dụng chuẩn trao đổi dữ liệu JSON Schema chuẩn hóa cho phản hồi của Agent (như OpenAI Structured Outputs) thay vì bóc tách chuỗi thô bằng Regex để tăng tính tin cậy tuyệt đối cho bộ Parser trên Production.
+1. **Khả năng mở rộng (Scalability):**
+   Dùng cấu trúc xuất dữ liệu JSON định hình sẵn của OpenAI (Structured Outputs) thay vì bóc tách text bằng Regex để đảm bảo hệ thống chạy tin cậy 100%, không bao giờ bị lỗi cú pháp khi chạy thực tế.
 
-2. **Safety (An toàn bảo mật):**
-   Tích hợp hệ thống phân tích sắc thái nội dung trực tiếp vào System Prompt để cảnh báo Agent không tạo ra các bài đăng marketing mang tính tiêu cực, lừa đảo hoặc vi phạm luật quảng cáo thương mại.
+2. **An toàn bảo mật (Safety):**
+   Tích hợp hệ thống lọc sắc thái ngôn ngữ trực tiếp vào System Prompt để ngăn chặn Agent viết ra các nội dung bài đăng tiêu cực, vi phạm pháp luật hoặc tiêu chuẩn quảng cáo.
 
-3. **Performance (Hiệu năng):**
-   Tập trung tối giản hóa mô tả tool trong System Prompt để giảm số lượng Prompt Tokens tiêu thụ trong các vòng lặp ReAct lặp đi lặp lại, tối ưu hóa chi phí vận hành hệ thống.
+3. **Hiệu năng hệ thống (Performance):**
+   Tối giản hóa mô tả tool trong System Prompt để giảm số lượng Prompt Tokens tiêu thụ trong các vòng lặp ReAct, giúp giảm tối đa chi phí vận hành hệ thống.
