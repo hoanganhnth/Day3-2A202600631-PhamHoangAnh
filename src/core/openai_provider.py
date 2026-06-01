@@ -1,5 +1,5 @@
 import time
-from typing import Dict, Any, Optional, Generator
+from typing import Dict, Any, Optional, Generator, List
 from openai import OpenAI
 from src.core.llm_provider import LLMProvider
 

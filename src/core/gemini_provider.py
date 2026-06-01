@@ -1,7 +1,7 @@
 import os
 import time
 import google.generativeai as genai
-from typing import Dict, Any, Optional, Generator
+from typing import Dict, Any, Optional, Generator, List
 from src.core.llm_provider import LLMProvider
 
 class GeminiProvider(LLMProvider):
